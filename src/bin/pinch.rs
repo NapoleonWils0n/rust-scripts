@@ -47,6 +47,8 @@ fn main () {
         .lines()
         .collect();
 
+    println!("url {}", url_string);
+
     if stream_urls.is_empty() {
         eprintln!("Error: Could not retrieve stream URLs.");
         std::process::exit(1);
