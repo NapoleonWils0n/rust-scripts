@@ -47,12 +47,13 @@ fn main () {
         .lines()
         .collect();
 
-    println!("{}", stream_urls);
+    println!("{}", url_string);
 
     if stream_urls.is_empty() {
         eprintln!("Error: Could not retrieve stream URLs.");
         std::process::exit(1);
     }
+
 
     let status = Command::new("mpc")
         .envs(std::env::vars()) // Inherit Wayland/SDL variables
