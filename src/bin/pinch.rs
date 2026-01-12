@@ -47,7 +47,7 @@ fn main () {
         .lines()
         .collect();
 
-    println!("url {}", url_string);
+    println!("url {}", stream_urls);
 
     if stream_urls.is_empty() {
         eprintln!("Error: Could not retrieve stream URLs.");
