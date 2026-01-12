@@ -40,4 +40,16 @@ fn main () {
         .output()
         .expect("Failed to execute yt-dlp to get stream URLs");
 
+    // FIX: Convert the output to an owned String so the Vec<&str> has a valid reference to borrow from
+    let url_string = String::from_utf8_lossy(&url_output.stdout);
+    let stream_urls: Vec<&str> = url_string
+        .trim()
+        .lines()
+        .collect();
+
+    if stream_urls.is_empty() {
+        eprintln!("Error: Could not retrieve stream URLs.");
+        std::process::exit(1);
+    }
+
 }
