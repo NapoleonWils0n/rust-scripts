@@ -42,6 +42,10 @@ fn main () {
 
     // FIX: Convert the output to an owned String so the Vec<&str> has a valid reference to borrow from
     let url_string = String::from_utf8_lossy(&url_output.stdout);
+    let stream_urls: Vec<&str> = url_string
+        .trim()
+        .lines()
+        .collect();
 
     println!("url {}", url_string);
 
