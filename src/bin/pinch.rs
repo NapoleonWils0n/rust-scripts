@@ -34,4 +34,10 @@ struct Args {
 fn main () {
     let args = Args::parse();
 
+    // Get stream URLs
+    let url_output = Command::new("yt-dlp")
+        .args(["-g", "--default-search", "ytsearch", &args.input])
+        .output()
+        .expect("Failed to execute yt-dlp to get stream URLs");
+
 }
