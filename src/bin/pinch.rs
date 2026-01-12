@@ -31,14 +31,21 @@ struct Args {
 fn main() {
     let args = Args::parse();
 
-    // 1. Get MPD_HOST, or build it from XDG_RUNTIME_DIR. 
-    // If neither exist, the program will crash with a clear error.
+    // 1. Resolve MPD_HOST with multiple fallbacks
     let mpd_host = std::env::var("MPD_HOST").unwrap_or_else(|_| {
-        let runtime_dir = std::env::var("XDG_RUNTIME_DIR")
-            .expect("Environment variable XDG_RUNTIME_DIR is not set");
-        format!("{}/mpd/socket", runtime_dir)
-    });
+        // Fallback 1: Check XDG_RUNTIME_DIR (NixOS default)
+        if let Ok(runtime_dir) = std::env::var("XDG_RUNTIME_DIR") {
+            let nix_path = format!("{}/mpd/socket", runtime_dir);
+            if std::path::Path::new(&nix_path).exists() {
+                return nix_path;
+            }
+        }
 
+        // Fallback 2: Check ~/.config/mpd/socket (Debian/Manual default)
+        let home = std::env::var("HOME")
+            .expect("Neither MPD_HOST, XDG_RUNTIME_DIR, nor HOME is set");
+        format!("{}/.config/mpd/socket", home)
+    });
 
     // 2. Get the stream URL using yt-dlp
     let url_output = Command::new("yt-dlp")
