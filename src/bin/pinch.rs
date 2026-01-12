@@ -30,3 +30,8 @@ struct Args {
     #[arg(short = 'v', long = "version", action = clap::ArgAction::Version)]
     version: Option<bool>,
 }
+
+fn main () {
+    let args = Args::parse();
+
+}
