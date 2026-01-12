@@ -17,3 +17,16 @@ use std::process::Command;
 // disable_help_flag prevents the naming conflict with the manual 'help' field
 #[clap(disable_version_flag = true, disable_help_flag = true)]
 
+struct Args {
+    /// Input URL (YouTube, Vimeo, etc.)
+    #[arg(short = 'i', required = true)]
+    input: String,
+
+    /// Print help
+    #[arg(short = 'h', long = "help", action = clap::ArgAction::Help)]
+    help: Option<bool>,
+
+    /// Print version
+    #[arg(short = 'v', long = "version", action = clap::ArgAction::Version)]
+    version: Option<bool>,
+}
