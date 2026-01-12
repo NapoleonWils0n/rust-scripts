@@ -11,7 +11,6 @@ use std::process::Command;
     author,
     version,
     about = "pinch send youtube audio to mpd",
-    after_help = "Example:\n pinch -i 'URL'\n\nDependencies:\n yt-dlp, mpc",
     after_help = "Example:\n pinch -i 'URL'\n\nDependencies:\n mpd, mpc:\n yt-dlp: https://github.com/yt-dlp/yt-dlp\n deno: https://deno.com/",
 )]
 #[clap(disable_version_flag = true, disable_help_flag = true)]
