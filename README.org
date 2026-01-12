@@ -1,0 +1,325 @@
+#+STARTUP: show2levels
+#+OPTIONS: num:nil author:nil
+* Rust Scripts
+** NixOS Build and Distribution
+
+This section covers how to compile the scripts for different platforms using Nix.
+We use three distinct targets to ensure maximum compatibility.
+
+*** Setup Build Workspace
+
+First, create a structured directory on your Desktop to collect the finished binaries.
+
+Create directories for each target platform
+
+#+begin_src sh
+mkdir -p ~/Desktop/build/{nixos,linux}
+#+end_src
+
+Optional: Clean existing binaries if doing a fresh release
+
+#+begin_src sh
+rm -f ~/Desktop/build/{nixos,linux}/*
+#+end_src
+
+*** flake.nix
+**** create the project directory
+
+#+begin_src sh
+mkdir -p ~/git/projects/rust-scripts/
+#+end_src
+
+change directory into the project directory
+
+#+begin_src sh
+cd ~/git/projects/rust-scripts/
+#+end_src
+
+**** create the flake.nix
+
+#+begin_src sh
+vi flake.nix
+#+end_src
+
+flake.nix
+
+#+begin_src nix
+{
+  description = "rust flake";
+
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
+    naersk.url = "github:nix-community/naersk";
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    flake-utils.url = "github:numtide/flake-utils";
+  };
+
+  outputs = { self, nixpkgs, naersk, rust-overlay, flake-utils }: 
+    flake-utils.lib.eachDefaultSystem (system:
+    let
+      # system is already provided by eachDefaultSystem, so we don't define it here
+      overlays = [ (import rust-overlay) ];
+      pkgs = import nixpkgs { inherit system overlays; };
+
+      rustToolchain = pkgs.rust-bin.stable.latest.default.override {
+        extensions = [ "rust-src" "rust-analyzer" ];
+        targets = [ "x86_64-unknown-linux-musl" "x86_64-pc-windows-gnu" ]; 
+      };
+
+      naerskLib = (naersk.lib.${system}.override {
+        cargo = rustToolchain;
+        rustc = rustToolchain;
+      });
+    in {
+      devShells.default = pkgs.mkShell {
+        # ADD MINGW TO THE SHELL FOR LINKING
+        buildInputs = [ 
+          rustToolchain 
+          pkgs.pkgsCross.mingwW64.stdenv.cc 
+        ];
+
+
+        # Tell Cargo which linker to use for Windows
+        # Add these lines to help the linker find pthreads
+        shellHook = ''
+          export RUST_SRC_PATH="${rustToolchain}/lib/rustlib/src/rust/library"
+          export NIX_CROSS_LDFLAGS="-L${pkgs.pkgsCross.mingwW64.windows.pthreads}/lib"
+          export NIX_CROSS_CFLAGS_COMPILE="-I${pkgs.pkgsCross.mingwW64.windows.pthreads}/include"
+          export CARGO_TARGET_X86_64_PC_WINDOWS_GNU_LINKER="x86_64-w64-mingw32-gcc"
+          export CARGO_TARGET_X86_64_PC_WINDOWS_GNU_RUSTFLAGS="-L ${pkgs.pkgsCross.mingwW64.windows.pthreads}/lib"
+        '';
+      };
+
+      packages.default = naerskLib.buildPackage {
+        src = ./.;
+      };
+    } 
+  ); # This closes eachDefaultSystem
+}    # This closes outputs
+
+#+end_src
+
+**** run nix develop
+
+run nix develop which will set up the rust environment
+
+#+begin_src sh
+nix develop
+#+end_src
+
+**** Cargo Initialization
+
+After entering the Nix development environment for the first time, you must initialize the Rust project structure.
+
+***** Initialize the Project
+
+Run cargo init to generate the necessary Rust configuration files and directory structure within the current folder.
+
+#+begin_src sh
+cargo init .
+#+end_src
+
+Note: This command creates a Cargo.toml file and a src/ directory with a default main.rs.
+
+***** Staging Project Files
+
+This will automatically create a git repository
+
+Once initialized, you need to track the following essential files in your git repository:
+
+#+begin_example
+.gitignore
+Cargo.toml
+flake.lock
+flake.nix
+src/
+#+end_example
+
+***** Git Setup
+
+Stage all the newly created files:
+
+#+begin_src sh
+git add .
+#+end_src
+
+Finalize the initialization with an initial commit:
+
+#+begin_src sh
+git commit -m 'project init'
+#+end_src
+
+**** gitignore
+
+a .gitignore file will be created
+
+#+begin_example
+.gitignore
+#+end_example
+
+with the following content
+
+#+begin_src sh
+/target
+#+end_src
+
+we need to edit the .gitignore 
+
+#+begin_src sh
+vi .gitignore
+#+end_src
+
+and a new line to exclude the results symlink
+
+#+begin_src sh
+/target
+/result*
+#+end_src
+
+check the git status
+
+#+begin_src sh
+git status
+#+end_src
+
+and then commit the changes
+
+#+begin_src sh
+git add .gitignore
+#+end_src
+
+and add a commit message
+
+#+begin_src sh
+git commit -m "update .gitignore to exclude build results"
+#+end_src
+
+*** NixOS build
+
+note you do not need to be inside the nix develop shell to run nix build
+
+run nix build to build the binaries for NixOS
+
+#+begin_src sh
+nix build
+#+end_src
+
+This will place your binaries in ./result/bin/ instead of target/release/.
+Building this way ensures the build is 100% reproducible and isolated from your local system state.
+Instead of a simple mv, which might fail if the source is the read-only Nix store, you should copy the binaries.
+
+When you copy a binary out of the Nix store, it keeps its "rpath."
+This means it still knows exactly where to find its library dependencies in the nix store, so it will continue to work perfectly.
+
+Create the bin directory in your home if you dont have one
+
+#+begin_src sh
+mkdir -p ~/bin
+#+end_src
+
+Run this command to copy all 32 binaries at once to the bin directory in your home
+
+#+begin_src sh
+cp ./result/bin/* ~/bin/
+#+end_src
+
+copy the scripts to the build directory on the desktop for github
+
+#+begin_src sh
+cp ./result/bin/* ~/Desktop/build/nixos/
+#+end_src
+
+A Note on Updates
+
+Keep in mind that if you change your Rust code and run nix build again, the binaries in ~/bin will not update automatically.
+You'll just need to run that cp command again to "deploy" your latest versions.
+
+*** Linux build (static)
+
+To build portable binaries that run on any Linux distribution, we use the musl target.
+This statically links all libraries so the binary is self-contained.
+
+You must be inside the nix develop shell to run this command.
+
+#+begin_src sh
+nix develop
+#+end_src
+
+Build the binaries using the musl target
+
+#+begin_src sh
+cargo build --release --target x86_64-unknown-linux-musl
+#+end_src
+
+The binaries will be located in target/x86_64-unknown-linux-musl/release/.
+
+list the binaries
+
+#+begin_src sh
+ls -l target/x86_64-unknown-linux-musl/release/
+#+end_src
+
+How to verify they are truly "Static"
+One of the main reasons to use musl is to ensure the binary has no external dependencies.
+
+You can verify this by running the ldd command on one of the new binaries:
+
+#+begin_src sh
+ldd target/x86_64-unknown-linux-musl/release/scene-detect-auto
+#+end_src
+
+Expected Output: It should say statically linked or not a dynamic executable.
+
+This confirms that a user on Ubuntu, Debian,
+or Arch can just download that file and run it immediately (provided they have ffmpeg installed).
+
+Copy the binaries to the build directory on the desktop
+
+#+begin_src sh
+fd -t f -d 1 -E "*.*" . target/x86_64-unknown-linux-musl/release/ -x cp {} ~/Desktop/build/linux/
+#+end_src
+
+explaination of the fd command
+
+#+begin_example
+-t f: Look for files only.
+
+-d 1: Depth 1 (don't go into subfolders like deps or build).
+
+-E "*.*": Exclude any file with a dot in the name (skips .d, .rlib, etc.).
+
+.: The search pattern (matches everything not excluded).
+
+target/.../release/: The directory to search in.
+
+-x cp {} ...: Execute the copy command for every search result.
+#+end_example
+
+The ! -name "*.*" logic in standard find can sometimes be finicky depending on the shell, but fd's -E (exclude) flag is very robust.
+
+This will cleanly grab your 32 binaries and ignore all the compiler junk.
+
+*** Remove old scripts before rebuilding.
+
+To remove the old scripts before rebuilding
+
+**** nixos
+
+Remove the result symlink which points to the previous Nix store build.
+
+**** linux
+
+Run nix develop to enter the development environment with all necessary dependencies
+
+#+begin_src sh
+nix develop
+#+end_src
+
+Remove the old compiled binaries and build artifacts (for both Linux and Windows targets) by running cargo clean.
+
+#+begin_src sh
+cargo clean
+#+end_src
