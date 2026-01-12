@@ -47,11 +47,23 @@ fn main () {
         .lines()
         .collect();
 
-    println!("{}", url_string);
+    println!("{}", stream_urls);
 
     if stream_urls.is_empty() {
         eprintln!("Error: Could not retrieve stream URLs.");
         std::process::exit(1);
+    }
+
+    let status = Command::new("mpc")
+        .envs(std::env::vars()) // Inherit Wayland/SDL variables
+        .args([
+            "-i", &input_path,
+        ])
+        .status()
+        .expect("Failed to execute mpc");
+
+    if !status.success() {
+        eprintln!("mpc process exited with an error.");
     }
 
 }
