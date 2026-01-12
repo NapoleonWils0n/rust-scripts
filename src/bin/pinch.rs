@@ -58,7 +58,7 @@ fn main () {
     let status = Command::new("mpc")
         .envs(std::env::vars()) // Inherit Wayland/SDL variables
         .args([
-            "add", &url_string,
+            "add", &stream_urls,
         ])
         .status()
         .expect("Failed to execute mpc");
