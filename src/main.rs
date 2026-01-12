@@ -1,3 +1,7 @@
 fn main() {
-    println!("Howay the lads");
+    println!("Rust Scripts");
+    println!("===============================");
+
+    println!("\nAvailable Binaries:");
+    println!("  - pinch           : pinch send youtube audio to mpd");
 }
