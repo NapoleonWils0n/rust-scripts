@@ -36,7 +36,7 @@ fn main () {
 
     // Get stream URLs
     let url_output = Command::new("yt-dlp")
-        .args(["-g", "--no-playlist", "-e", "-f", "bestaudio",  &args.input])
+        .args(["-g", "--no-playlist", "-f", "bestaudio",  &args.input])
         .output()
         .expect("Failed to execute yt-dlp to get stream URLs");
 
@@ -47,7 +47,7 @@ fn main () {
         .lines()
         .collect();
 
-    println!("url {}", url_string);
+    println!("{}", url_string);
 
     if stream_urls.is_empty() {
         eprintln!("Error: Could not retrieve stream URLs.");
