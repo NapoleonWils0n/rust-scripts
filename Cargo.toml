@@ -3,5 +3,9 @@ name = "rust_scripts"
 version = "0.1.0"
 edition = "2024"
 
+[[bin]]
+name = "pinch"
+path = "src/bin/pinch.rs"
+
 [dependencies]
 clap = { version = "4.0", features = ["derive"] }
