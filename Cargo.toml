@@ -7,5 +7,9 @@ edition = "2024"
 name = "pinch"
 path = "src/bin/pinch.rs"
 
+[[bin]]
+name = "relay-mpv"
+path = "src/bin/relay-mpv.rs"
+
 [dependencies]
 clap = { version = "4.0", features = ["derive"] }
