@@ -6,6 +6,7 @@
 use clap::Parser;
 use std::process::Command;
 use std::fs;
+use std::os::unix::fs::FileTypeExt;
 use std::path::Path;
 
 #[derive(Parser, Debug)]
@@ -13,20 +14,19 @@ use std::path::Path;
     author,
     version,
     about = "relay a stream to a named pipe with mpv",
-    after_help = "Example:\n relay-mpv -i 'URL' -s 00:00:00 -e 00:00:00\n\nDependencies:\n mpv: https://mpv.io/\n yt-dlp: https://github.com/yt-dlp/yt-dlp\n deno: https://deno.com/",
+    after_help = "Example:\n relay-mpv -i 'URL' -s 00:00:00 -e 00:00:10\n\nDependencies:\n mpv, yt-dlp",
 )]
-
 #[clap(disable_version_flag = true, disable_help_flag = true)]
 struct Args {
     /// Input URL (YouTube, etc.)
     #[arg(short = 'i', required = true)]
     input: String,
 
-    /// Start time
+    /// Start time (optional)
     #[arg(short = 's')]
     start: Option<String>,
 
-    /// End time
+    /// End time (optional)
     #[arg(short = 'e')]
     end: Option<String>,
 
@@ -39,23 +39,23 @@ struct Args {
     version: Option<bool>,
 }
 
-// main
 fn main() {
     let args = Args::parse();
 
-    // 1. RESTART LOGIC: Ensure the pipe is fresh and not blocked/stale
+    // 1. Check if the /tmp/relay named pipe exists, otherwise create it
     let pipe_path = "/tmp/relay";
-
-   if Path::new(pipe_path).exists() {
-        // Remove the existing pipe/file to clear any stale data or locks
-        fs::remove_file(pipe_path).expect("Failed to remove stale pipe");
+    if !Path::new(pipe_path).exists() {
+        Command::new("mkfifo")
+            .arg(pipe_path)
+            .status()
+            .expect("Failed to create named pipe /tmp/relay");
+    } else {
+        let metadata = fs::metadata(pipe_path).expect("Failed to get pipe metadata");
+        if !metadata.file_type().is_fifo() {
+            eprintln!("Error: /tmp/relay exists but is not a named pipe.");
+            std::process::exit(1);
+        }
     }
-
-    // Create a fresh named pipe
-    Command::new("mkfifo")
-        .arg(pipe_path)
-        .status()
-        .expect("Failed to create fresh named pipe /tmp/relay");
 
     // 2. Prepare mpv arguments 
     let mut mpv_args = vec![
@@ -64,26 +64,22 @@ fn main() {
         "--of=nut",
         "--ovc=rawvideo",
         "--oac=pcm_s16le",
-        "--msg-level=all=status,ffmpeg=fatal",
+        "--msg-level=all=status,ffmpeg=fatal", // Suppress ffmpeg errors
     ];
 
-    // Add optional start time if provided 
-    // Use format! to join the flag and value with an '='
+    // Format optional arguments with '=' to satisfy mpv requirements
     let start_arg;
     if let Some(ref s) = args.start {
         start_arg = format!("--start={}", s);
         mpv_args.push(&start_arg);
     }
 
-    // Add optional end time if provided 
-    // Use format! to join the flag and value with an '='
     let end_arg;
     if let Some(ref e) = args.end {
         end_arg = format!("--end={}", e);
         mpv_args.push(&end_arg);
     }
 
-    // Add the input URL 
     mpv_args.push(&args.input);
 
     // 3. Execute mpv 
@@ -96,5 +92,4 @@ fn main() {
         eprintln!("mpv execution failed");
         std::process::exit(1);
     }
-
 }
