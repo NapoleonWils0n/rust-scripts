@@ -9,18 +9,13 @@ use std::fs;
 use std::os::unix::fs::FileTypeExt;
 use std::path::Path;
 
-
-use clap::Parser;
-use std::process::Command;
-
 #[derive(Parser, Debug)]
 #[command(
     author,
     version,
     about = "relay a stream to a named pipe with mpv",
-    after_help = "Example:\n pinch -i 'URL'\n\nDependencies:\n mpv: https://mpv.io/\n yt-dlp: https://github.com/yt-dlp/yt-dlp\n deno: https://deno.com/",
+    after_help = "Example:\n relay-mpv -i 'URL' -s 00:00:00 -e 00:00:00\n\nDependencies:\n mpv: https://mpv.io/\n yt-dlp: https://github.com/yt-dlp/yt-dlp\n deno: https://deno.com/",
 )]
-
 
 #[clap(disable_version_flag = true, disable_help_flag = true)]
 struct Args {
@@ -30,11 +25,11 @@ struct Args {
 
     /// Start time
     #[arg(short = 's')]
-    input: String,
+    start: Option<String>,
 
     /// End time
     #[arg(short = 'e')]
-    input: String,
+    end: Option<String>,
 
     /// Print help
     #[arg(short = 'h', long = "help", action = clap::ArgAction::Help)]
@@ -49,7 +44,7 @@ struct Args {
 fn main() {
     let args = Args::parse();
 
-// 1. Check if the /tmp/relay named pipe exists, otherwise create it 
+    // 1. Check if the /tmp/relay named pipe exists, otherwise create it 
     let pipe_path = "/tmp/relay";
     if !Path::new(pipe_path).exists() {
         Command::new("mkfifo")
