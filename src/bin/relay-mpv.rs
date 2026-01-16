@@ -59,7 +59,6 @@ fn main() {
 
     // 2. Prepare mpv arguments 
     let mut mpv_args = vec![
-        "--config-dir=/dev/null",
         "--o=/tmp/relay",
         "--of=nut",
         "--ovc=rawvideo",
