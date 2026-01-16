@@ -6,7 +6,6 @@
 use clap::Parser;
 use std::process::Command;
 use std::fs;
-use std::os::unix::fs::FileTypeExt;
 use std::path::Path;
 
 #[derive(Parser, Debug)]
@@ -44,21 +43,19 @@ struct Args {
 fn main() {
     let args = Args::parse();
 
-    // 1. Check if the /tmp/relay named pipe exists, otherwise create it 
+    // 1. RESTART LOGIC: Ensure the pipe is fresh and not blocked/stale
     let pipe_path = "/tmp/relay";
-    if !Path::new(pipe_path).exists() {
-        Command::new("mkfifo")
-            .arg(pipe_path)
-            .status()
-            .expect("Failed to create named pipe /tmp/relay");
-    } else {
-        // Verify it is actually a named pipe
-        let metadata = fs::metadata(pipe_path).expect("Failed to get pipe metadata");
-        if !metadata.file_type().is_fifo() {
-            eprintln!("Error: /tmp/relay exists but is not a named pipe.");
-            std::process::exit(1);
-        }
+
+   if Path::new(pipe_path).exists() {
+        // Remove the existing pipe/file to clear any stale data or locks
+        fs::remove_file(pipe_path).expect("Failed to remove stale pipe");
     }
+
+    // Create a fresh named pipe
+    Command::new("mkfifo")
+        .arg(pipe_path)
+        .status()
+        .expect("Failed to create fresh named pipe /tmp/relay");
 
     // 2. Prepare mpv arguments 
     let mut mpv_args = vec![
@@ -67,18 +64,23 @@ fn main() {
         "--of=nut",
         "--ovc=rawvideo",
         "--oac=pcm_s16le",
+        "--msg-level=all=status,ffmpeg=fatal",
     ];
 
     // Add optional start time if provided 
+    // Use format! to join the flag and value with an '='
+    let start_arg;
     if let Some(ref s) = args.start {
-        mpv_args.push("--start");
-        mpv_args.push(s);
+        start_arg = format!("--start={}", s);
+        mpv_args.push(&start_arg);
     }
 
     // Add optional end time if provided 
+    // Use format! to join the flag and value with an '='
+    let end_arg;
     if let Some(ref e) = args.end {
-        mpv_args.push("--end");
-        mpv_args.push(e);
+        end_arg = format!("--end={}", e);
+        mpv_args.push(&end_arg);
     }
 
     // Add the input URL 
