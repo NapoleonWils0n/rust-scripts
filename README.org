@@ -874,7 +874,6 @@ The ! -name "*.*" logic in standard find can sometimes be finicky depending on t
 
 This will cleanly grab your 32 binaries and ignore all the compiler junk.
 
-
 *** Create the release
 **** rename the build directory on the desktop
 
