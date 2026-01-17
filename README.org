@@ -1,6 +1,95 @@
 #+STARTUP: show2levels
 #+OPTIONS: num:nil author:nil
 * Rust Scripts
+** List of scripts
+*** relay-mpv
+
+relay a stream to a named pipe with mpv
+
+allows you to stream a video from mpv to a obs studio media source
+
+#+begin_src sh
+relay-mpv -i url -s 00:00:00 -e 00:00:00
+#+end_src
+
+Run the script with the -h option to show the help.
+
+#+begin_src sh
+relay-mpv -h
+#+end_src
+
+Help output.
+
+#+begin_example
+relay a stream to a named pipe with mpv
+
+Usage: relay-mpv [OPTIONS] -i <INPUT>
+
+Options:
+  -i <INPUT>     Input URL (YouTube, etc.)
+  -s <START>     Start time (optional)
+  -e <END>       End time (optional)
+  -h, --help     Print help
+  -v, --version  Print version
+
+Example:
+ relay-mpv -i 'URL' -s 00:00:00 -e 00:00:10
+
+Dependencies:
+ mpv, yt-dlp
+#+end_example
+
+*** pinch
+
+sends a link from youtube to mpd using a socket
+
+The socket should be location can be set using the MPD_HOST variable in your shell config
+
+Or using XDG_RUNTIME_DIR directory and /mpd/socket
+
+for instance
+
+#+begin_example
+/run/user/1000/mpd/socket
+#+end_example
+
+or using the following directory
+
+#+begin_example
+~/.config/mpd/socket
+#+end_example
+
+#+begin_src sh
+pinch -i url
+#+end_src
+
+Run the script with the -h option to show the help.
+
+#+begin_src sh
+pinch -h
+#+end_src
+
+Help output.
+
+#+begin_example
+pinch send youtube audio to mpd
+
+Usage: pinch -i <INPUT>
+
+Options:
+  -i <INPUT>     Input URL (YouTube, etc.)
+  -h, --help     Print help
+  -v, --version  Print version
+
+Example:
+ pinch -i 'URL'
+
+Dependencies:
+ mpd, mpc:
+ yt-dlp: https://github.com/yt-dlp/yt-dlp
+ deno: https://deno.com/
+#+end_example
+
 ** Scripts install
 *** NixOS install
 :PROPERTIES:
@@ -784,6 +873,106 @@ target/.../release/: The directory to search in.
 The ! -name "*.*" logic in standard find can sometimes be finicky depending on the shell, but fd's -E (exclude) flag is very robust.
 
 This will cleanly grab your 32 binaries and ignore all the compiler junk.
+
+
+*** Create the release
+**** rename the build directory on the desktop
+
+#+begin_src sh
+cd ~/Desktop
+#+end_src
+
+Note: replace v1 with the release number in the examples below.
+
+#+begin_src sh
+mv build rust-scripts-build-v1
+#+end_src
+
+Change into the rust-scripts-build-v1 directory
+
+#+begin_src sh
+cd rust-scripts-build-v1
+#+end_src
+
+**** rename the build directories for nixos, linux and windows
+
+linux
+
+#+begin_src sh
+mv linux linux-rust-scripts-v1
+#+end_src
+
+nixos
+
+#+begin_src sh
+mv nixos nixos-rust-scripts-v1
+#+end_src
+
+**** remove the rust_scripts file
+
+The rust_scripts file is build from the main.rs which is a list of all the scripts,
+and is not needed so we can remove it.
+
+Remove the rust_scripts file from the Linux and NixOS
+
+Linux
+
+#+begin_src sh
+rm -i linux-rust-scripts-v1/rust_scripts
+#+end_src
+
+NixOS
+
+#+begin_src sh
+rm -i nixos-rust-scripts-v1/rust_scripts
+#+end_src
+
+**** compress the releases
+***** linux
+
+#+begin_src sh
+tar -czvf linux-rust-scripts-v1.tar.gz linux-rust-scripts-v1 
+#+end_src
+
+***** nixos
+
+#+begin_src sh
+tar -czvf nixos-rust-scripts-v1.tar.gz nixos-rust-scripts-v1
+#+end_src
+
+**** create release-files directory
+
+#+begin_src sh
+mkdir -p release-files-v1
+#+end_src
+
+move the tar files and zip into the release-files directory
+
+#+begin_src sh
+mv *-rust-scripts-v[0-9]*{.tar.gz} release-files-v1/
+#+end_src
+
+**** create checksums for the archives
+
+change directory into the release-files-v1 directory
+
+#+begin_src sh
+cd release-files-v1
+#+end_src
+
+create the checksums
+
+***** linux 
+
+#+begin_src sh
+sha256sum linux-rust-scripts-v1.tar.gz > linux-rust-scripts-v1.tar.gz.sha256
+#+end_src
+
+***** nixos
+
+#+begin_src sh
+sha256sum nixos-rust-scripts-v1.tar.gz > nixos-rust-scripts-v1.tar.gz.sha256
+#+end_src
 
 *** Remove old scripts before rebuilding.
 
