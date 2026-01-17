@@ -1,6 +1,489 @@
 #+STARTUP: show2levels
 #+OPTIONS: num:nil author:nil
 * Rust Scripts
+** Scripts install
+*** NixOS install
+:PROPERTIES:
+:CUSTOM_ID: nixos-install
+:END:
+
+**** Install Dependencies
+
+Install dependencies with home-manager by adding the following packages.
+
+[[https://github.com/nix-community/home-manager]]
+
+#+begin_example
+mpv
+ffmpeg-full
+yt-dlp
+deno
+#+end_example
+
+**** Environment Path Setup
+***** create bin directory
+
+Create a bin directory in your home folder to store the scripts.
+
+#+BEGIN_SRC sh
+mkdir -p ~/bin
+#+END_SRC
+
+***** zsh shell
+
+#+begin_example
+~/.zshenv
+#+end_example
+
+If you are using zsh add the following code to your ~/.zshenv file
+
+This sets up the PATH for the rust scripts
+
+#+begin_src sh
+typeset -U PATH path
+path=("$HOME/bin" "$path[@]")
+export PATH
+#+end_src
+
+Source your ~/.zshenv if you are using the zsh shell
+
+#+BEGIN_SRC sh
+source ~/.zshenv
+#+END_SRC
+
+***** bash shell
+
+#+begin_example
+~/.bashrc
+#+end_example
+
+If you are using bash add the following code to your ~/.bashrc
+
+This sets up the PATH for the rust scripts and configures the ffplay video driver.
+
+#+BEGIN_SRC sh
+if [ -d "$HOME/bin" ]; then
+   PATH="$HOME/bin:$PATH"
+fi
+#+END_SRC
+
+Source your ~/.bashrc if you are using the bash shell
+
+#+BEGIN_SRC sh
+source ~/.bashrc
+#+END_SRC
+
+*** Linux install
+:PROPERTIES:
+:CUSTOM_ID: linux-install
+:END:
+
+**** ffmpeg install
+
+Install ffmpeg on debian or ubuntu,
+for other linux distros see the documentation for your package manager
+
+#+BEGIN_SRC sh
+sudo apt install ffmpeg
+#+END_SRC
+
+**** mpv install
+
+Install mpv on debian or ubuntu,
+for other linux distros see the documentation for your package manager
+
+#+begin_src sh
+sudo apt install mpv
+#+end_src
+
+**** yt-dlp install
+
+yt-dlp needed for trim-remote-clip
+
+***** download yt-dlp
+
+#+begin_src sh
+curl 'https://github.com/yt-dlp/yt-dlp/releases/download/2025.12.08/yt-dlp' -o ~/bin/yt-dlp 
+#+end_src
+
+***** make yt-dlp executable
+
+#+begin_src sh
+chmod +x ~/bin/yt-dlp 
+#+end_src
+
+yt-dlp upgrade
+
+#+begin_src sh
+yt-dlp -U
+#+end_src
+
+***** install deno
+
+#+begin_src sh
+curl -fsSL https://deno.land/install.sh | sh 
+#+end_src
+
+upgrade deno
+
+#+begin_src sh
+deno upgrade
+#+end_src
+
+**** Environment Path Setup
+***** create bin directory
+
+Create a bin directory in your home folder to store the scripts.
+
+#+BEGIN_SRC sh
+mkdir -p ~/bin
+#+END_SRC
+
+***** zsh shell
+
+#+begin_example
+~/.zshenv
+#+end_example
+
+If you are using zsh add the following code to your ~/.zshenv file
+
+This sets up the PATH for the rust scripts, yt-dlp, and deno.
+
+#+begin_src sh
+typeset -U PATH path
+path=("$HOME/bin" "${HOME}/.deno/bin" "$path[@]")
+export PATH
+#+end_src
+
+Source your ~/.zshenv if you are using the zsh shell
+
+#+BEGIN_SRC sh
+source ~/.zshenv
+#+END_SRC
+
+***** bash shell
+
+#+begin_example
+~/.bashrc
+#+end_example
+
+If you are using bash add the following code to your ~/.bashrc
+
+This sets up the PATH for the rust scripts, yt-dlp, and deno.
+
+#+BEGIN_SRC sh
+if [ -d "$HOME/bin" ]; then
+   PATH="$HOME/bin:$HOME/.deno/bin:$PATH"
+fi
+#+END_SRC
+
+Source your ~/.bashrc if you are using the bash shell
+
+#+BEGIN_SRC sh
+source ~/.bashrc
+#+END_SRC
+
+*** Mac install
+:PROPERTIES:
+:CUSTOM_ID: mac-install
+:END:
+
+**** Xcode install
+
+On macOS, you will need to install the development tools and the Rust compiler to build the scripts from source.
+
+Install the Xcode Command Line Tools to provide the necessary compilers,
+by running the following command in the terminal.
+
+#+begin_src sh
+xcode-select --install
+#+end_src
+
+**** Rust install
+
+Install the Rust toolchain using rustup.
+
+#+begin_src sh
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+#+end_src
+
+**** homebrew install
+
+[[https://brew.sh/]]
+
+Install the Homebrew package manager.
+Run the following command in the terminal to install homebrew.
+
+#+begin_src sh
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+#+end_src
+
+Note: When the installer finishes, look for the "Next steps" section in your terminal.
+You must run the commands provided there to add Homebrew to your system PATH.
+
+**** Install Dependencies
+
+Install dependencies with homebrew,
+by running the following command in the terminal.
+
+#+begin_src sh
+brew install ffmpeg yt-dlp deno mpv
+#+end_src
+
+**** Environment Path Setup
+***** create bin directory
+
+Create a bin directory in your home folder to store the scripts.
+
+#+BEGIN_SRC sh
+mkdir -p ~/bin
+#+END_SRC
+
+***** zsh shell
+
+#+begin_example
+~/.zshenv
+#+end_example
+
+Add the following code to your ~/.zshenv file.
+This is the default shell for macOS.
+
+This sets up the PATH for the rust scripts.
+
+#+begin_src sh
+typeset -U PATH path
+path=("$HOME/bin" "$path[@]")
+export PATH
+#+end_src
+
+Source the configuration to apply changes.
+
+#+BEGIN_SRC sh
+source ~/.zshenv
+#+END_SRC
+
+***** bash shell
+
+#+begin_example
+~/.bashrc
+#+end_example
+
+If you are using bash add the following code to your ~/.bashrc
+
+This sets up the PATH for the rust scripts.
+
+#+BEGIN_SRC sh
+if [ -d "$HOME/bin" ]; then
+   PATH="$HOME/bin:$PATH"
+fi
+#+END_SRC
+
+Source your ~/.bashrc if you are using the bash shell
+
+#+BEGIN_SRC sh
+source ~/.bashrc
+#+END_SRC
+
+**** Compile and Install
+
+Since macOS requires manual compilation,
+follow these steps to build the binaries and move them to your bin folder.
+
+***** Clone the git repository
+
+Create a directory to store the git repository in your home directory.
+
+#+begin_src sh
+mkdir -p ~/git 
+#+end_src
+
+Change into the git directory in your home.
+
+#+begin_src sh
+cd ~/git
+#+end_src
+
+Run the following command in the terminal to clone the rust-scripts git repository.
+
+#+begin_src sh
+git clone https://github.com/NapoleonWils0n/rust-scripts
+#+end_src
+
+***** Build the project using Cargo.
+
+Change directory into the rust-scripts git repository.
+
+#+begin_src sh
+cd rust-scripts
+#+end_src
+
+Build the project with Cargo.
+
+#+begin_src sh
+cargo build --release
+#+end_src
+
+When you run cargo build --release,
+Rust places the binaries in target/release/
+
+Copy the scripts to the bin directory in your home.
+
+#+begin_src sh
+cp target/release/* ~/bin/
+#+end_src
+
+Note: You may see some non-executable files in the bin folder after this command (like .d files).
+This is normal, but you only need the files that match the script names.
+
+*** Freebsd install
+:PROPERTIES:
+:CUSTOM_ID: freebsd-install
+:END:
+
+**** Rust install
+
+Install the required tools and the Rust toolchain using the pkg manager.
+Run the following command in the terminal to install Rust.
+
+#+begin_src sh
+sudo pkg install rust
+#+end_src
+
+**** Install Dependencies
+
+Install dependencies with pkg.
+
+#+BEGIN_SRC sh
+sudo pkg install ffmpeg yt-dlp deno mpv
+#+END_SRC
+
+**** Environment Path Setup
+***** create bin directory
+
+Create a bin directory in your home folder to store the scripts.
+
+#+BEGIN_SRC sh
+mkdir -p ~/bin
+#+END_SRC
+
+***** sh shell
+
+#+begin_example
+~/.profile
+#+end_example
+
+For the default shell (sh or tcsh) shell on Freebsd,
+edit your shell ~/.profile
+
+add this code to your ~/.profile file.
+
+#+begin_src sh
+if [ -d "$HOME/bin" ]; then
+    PATH="$HOME/bin:$PATH"
+fi
+#+end_src
+
+Reload your ~/.profile
+
+#+BEGIN_SRC sh
+. ~/.profile
+#+END_SRC
+
+***** zsh shell
+
+#+begin_example
+~/.zshenv
+#+end_example
+
+If you are using zsh add the following code to your ~/.zshenv file
+
+This sets up the PATH for the rust scripts.
+
+#+begin_src sh
+typeset -U PATH path
+path=("$HOME/bin" "$path[@]")
+export PATH
+#+end_src
+
+Source your ~/.zshenv if you are using the zsh shell
+
+#+BEGIN_SRC sh
+source ~/.zshenv
+#+END_SRC
+
+***** bash shell
+
+#+begin_example
+~/.bashrc
+#+end_example
+
+If you are using bash add the following code to your ~/.bashrc
+
+This sets up the PATH for the rust scripts.
+
+#+BEGIN_SRC sh
+if [ -d "$HOME/bin" ]; then
+   PATH="$HOME/bin:$PATH"
+fi
+#+END_SRC
+
+Source your ~/.bashrc if you are using the bash shell
+
+#+BEGIN_SRC sh
+source ~/.bashrc
+#+END_SRC
+
+**** Compile and Install
+
+Since Freebsd requires manual compilation,
+follow these steps to build the binaries and move them to your bin folder.
+
+***** Clone the git repository
+
+Create a directory to store the git repository in your home directory.
+
+#+begin_src sh
+mkdir -p ~/git 
+#+end_src
+
+Change into the git directory in your home.
+
+#+begin_src sh
+cd ~/git
+#+end_src
+
+Run the following command in the terminal to clone the rust-scripts git repository.
+
+#+begin_src sh
+git clone https://github.com/NapoleonWils0n/rust-scripts
+#+end_src
+
+***** Build the project using Cargo.
+
+Change directory into the rust-scripts git repository.
+
+#+begin_src sh
+cd rust-scripts
+#+end_src
+
+Build the project with Cargo.
+
+#+begin_src sh
+cargo build --release
+#+end_src
+
+When you run cargo build --release,
+Rust places the binaries in target/release/
+
+Copy the scripts to the bin directory in your home.
+
+#+begin_src sh
+cp target/release/* ~/bin/
+#+end_src
+
+Note: You may see some non-executable files in the bin folder after this command (like .d files).
+This is normal, but you only need the files that match the script names.
+
 ** NixOS Build and Distribution
 
 This section covers how to compile the scripts for different platforms using Nix.
