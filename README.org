@@ -162,6 +162,41 @@ Source your ~/.bashrc if you are using the bash shell
 source ~/.bashrc
 #+END_SRC
 
+**** Release download
+
+Download the latest NixOS release archive and sha256sum check sum
+and then follow these steps to install the binaries.
+
+[[https://github.com/NapoleonWils0n/rust-scripts/releases]]
+
+***** check the sha256sum check sum
+
+Open your terminal and run the following command:
+
+#+begin_src sh
+sha256sum -c nixos-rust-scripts-v1.tar.gz.sha256
+#+end_src
+
+#+begin_example
+Expected Output: nixos-rust-scripts-v1.tar.gz: OK
+#+end_example
+
+***** Extract the archive
+
+Note: Replace version-1.0 with the actual version number you downloaded.
+
+#+begin_src sh
+tar -xf nixos-rust-scripts-v1.tar.gz
+#+end_src
+
+***** Deploy the scripts
+
+Move the extracted binaries into your local ~/bin directory.
+
+#+begin_src sh
+mv nixos-rust-scripts-v1/* ~/bin/
+#+end_src
+
 *** Linux install
 :PROPERTIES:
 :CUSTOM_ID: linux-install
@@ -271,6 +306,41 @@ Source your ~/.bashrc if you are using the bash shell
 #+BEGIN_SRC sh
 source ~/.bashrc
 #+END_SRC
+
+**** Release download
+
+Download the latest Linux release archive and sha256sum check sum
+and then follow these steps to install the binaries.
+
+[[https://github.com/NapoleonWils0n/rust-scripts/releases]]
+
+***** check the sha256sum check sum
+
+Open your terminal and run the following command:
+
+#+begin_src sh
+sha256sum -c linux-rust-scripts-v1.tar.gz.sha256
+#+end_src
+
+#+begin_example
+Expected Output: linux-rust-scripts-v1.tar.gz: OK
+#+end_example
+
+***** Extract the archive
+
+Note: Replace version-1.0 with the actual version number you downloaded.
+
+#+begin_src sh
+tar -xf linux-rust-scripts-v1.tar.gz
+#+end_src
+
+***** Deploy the scripts
+
+Move the extracted binaries into your local ~/bin directory.
+
+#+begin_src sh
+mv linux-rust-scripts-v1/* ~/bin/
+#+end_src
 
 *** Mac install
 :PROPERTIES:
