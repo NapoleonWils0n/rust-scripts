@@ -948,7 +948,7 @@ mkdir -p release-files-v1
 move the tar files and zip into the release-files directory
 
 #+begin_src sh
-mv *-rust-scripts-v[0-9]*{.tar.gz} release-files-v1/
+mv *-rust-scripts-v[0-9]*.tar.gz release-files-v1/
 #+end_src
 
 **** create checksums for the archives
