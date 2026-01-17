@@ -13,3 +13,4 @@ path = "src/bin/relay-mpv.rs"
 
 [dependencies]
 clap = { version = "4.0", features = ["derive"] }
+libc = "0.2"

@@ -1,12 +1,13 @@
 //==============================================================================
 // relay-mpv
-// Description: relay a stream to a named pipe with mpv
+// Description: relay a stream to a named pipe with mpv and flush on exit
 //==============================================================================
 
 use clap::Parser;
 use std::process::Command;
-use std::fs;
-use std::os::unix::fs::FileTypeExt;
+use std::fs::{self, OpenOptions};
+use std::io::Read;
+use std::os::unix::fs::{FileTypeExt, OpenOptionsExt};
 use std::path::Path;
 
 #[derive(Parser, Debug)]
@@ -63,10 +64,11 @@ fn main() {
         "--of=nut",
         "--ovc=rawvideo",
         "--oac=pcm_s16le",
-        "--msg-level=all=status,ffmpeg=fatal", // Suppress ffmpeg errors
+        "--msg-level=all=status,ffmpeg=fatal",
+        // Adding ytdl-raw-options to minimize potential site-imposed wait times
+        "--ytdl-raw-options=sleep-interval=0,max-sleep-interval=0,socket-timeout=5,no-playlist=",
     ];
 
-    // Format optional arguments with '=' to satisfy mpv requirements
     let start_arg;
     if let Some(ref s) = args.start {
         start_arg = format!("--start={}", s);
@@ -87,8 +89,22 @@ fn main() {
         .status()
         .expect("Failed to execute mpv");
 
+    // 4. CLEANUP: Flush the pipe to prevent stale data for the next stream
+    // Opening in non-blocking mode ensures we don't hang if the pipe is empty
+    if let Ok(mut pipe) = OpenOptions::new()
+        .read(true)
+        .custom_flags(libc::O_NONBLOCK)
+        .open(pipe_path) 
+    {
+        let mut buffer = [0; 8192];
+        // Read until the pipe is empty (EAGAIN/EWOULDBLOCK will stop the loop)
+        while let Ok(n) = pipe.read(&mut buffer) {
+            if n == 0 { break; } 
+        }
+    }
+
     if !status.success() {
-        eprintln!("mpv execution failed");
-        std::process::exit(1);
+        eprintln!("mpv execution finished with non-zero status");
+        std::process::exit(status.code().unwrap_or(1));
     }
 }
