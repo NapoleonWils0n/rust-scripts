@@ -150,6 +150,8 @@ Install dependencies with home-manager by adding the following packages.
 
 [[https://github.com/nix-community/home-manager]]
 
+Dependencies for relay-mpv
+
 #+begin_example
 mpv
 ffmpeg-full
@@ -249,6 +251,8 @@ mv nixos-rust-scripts-v3/* ~/bin/
 :PROPERTIES:
 :CUSTOM_ID: linux-install
 :END:
+
+Dependencies for relay-mpv
 
 **** ffmpeg install
 
@@ -433,6 +437,8 @@ You must run the commands provided there to add Homebrew to your system PATH.
 Install dependencies with homebrew,
 by running the following command in the terminal.
 
+Dependencies for relay-mpv
+
 #+begin_src sh
 brew install ffmpeg yt-dlp deno mpv
 #+end_src
@@ -559,6 +565,8 @@ sudo pkg install rust
 **** Install Dependencies
 
 Install dependencies with pkg.
+
+Dependencies for relay-mpv
 
 #+BEGIN_SRC sh
 sudo pkg install ffmpeg yt-dlp deno mpv
