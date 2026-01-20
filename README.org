@@ -44,6 +44,49 @@ Dependencies:
  mpv, yt-dlp
 #+end_example
 
+*** record-pipewire
+
+Record PipeWire audio with duration in filename
+
+Run the script with the -h option to show the help.
+
+#+begin_src sh
+record-pipewire -h
+#+end_src
+
+Help output.
+
+#+begin_example
+Record PipeWire audio with duration in filename
+
+Usage: record-pipewire [OPTIONS]
+
+Options:
+  -o <PREFIX>    Optional prefix [default: pipewire]
+  -h, --help     Print help
+  -v, --version  Print version
+#+end_example
+
+Note:
+
+Example output for a 30 second recording using the default output file name
+
+#+begin_example
+pipewire-[00:00:30].wav
+#+end_example
+
+Using the -o option you can change the output file name prefix
+
+#+begin_src sh
+record-pipewire -o youtube
+#+end_src
+
+Output
+
+#+begin_example
+youtube-[00:00:30].wav
+#+end_example
+
 *** pinch
 
 sends a link from youtube to mpd using a socket
@@ -179,11 +222,11 @@ and then follow these steps to install the binaries.
 Open your terminal and run the following command:
 
 #+begin_src sh
-sha256sum -c nixos-rust-scripts-v2.tar.gz.sha256
+sha256sum -c nixos-rust-scripts-v3.tar.gz.sha256
 #+end_src
 
 #+begin_example
-Expected Output: nixos-rust-scripts-v2.tar.gz: OK
+Expected Output: nixos-rust-scripts-v3.tar.gz: OK
 #+end_example
 
 ***** Extract the archive
@@ -191,7 +234,7 @@ Expected Output: nixos-rust-scripts-v2.tar.gz: OK
 Note: Replace version-1.0 with the actual version number you downloaded.
 
 #+begin_src sh
-tar -xf nixos-rust-scripts-v2.tar.gz
+tar -xf nixos-rust-scripts-v3.tar.gz
 #+end_src
 
 ***** Deploy the scripts
@@ -199,7 +242,7 @@ tar -xf nixos-rust-scripts-v2.tar.gz
 Move the extracted binaries into your local ~/bin directory.
 
 #+begin_src sh
-mv nixos-rust-scripts-v2/* ~/bin/
+mv nixos-rust-scripts-v3/* ~/bin/
 #+end_src
 
 *** Linux install
@@ -324,11 +367,11 @@ and then follow these steps to install the binaries.
 Open your terminal and run the following command:
 
 #+begin_src sh
-sha256sum -c linux-rust-scripts-v2.tar.gz.sha256
+sha256sum -c linux-rust-scripts-v3.tar.gz.sha256
 #+end_src
 
 #+begin_example
-Expected Output: linux-rust-scripts-v2.tar.gz: OK
+Expected Output: linux-rust-scripts-v3.tar.gz: OK
 #+end_example
 
 ***** Extract the archive
@@ -336,7 +379,7 @@ Expected Output: linux-rust-scripts-v2.tar.gz: OK
 Note: Replace version-1.0 with the actual version number you downloaded.
 
 #+begin_src sh
-tar -xf linux-rust-scripts-v2.tar.gz
+tar -xf linux-rust-scripts-v3.tar.gz
 #+end_src
 
 ***** Deploy the scripts
@@ -344,7 +387,7 @@ tar -xf linux-rust-scripts-v2.tar.gz
 Move the extracted binaries into your local ~/bin directory.
 
 #+begin_src sh
-mv linux-rust-scripts-v2/* ~/bin/
+mv linux-rust-scripts-v3/* ~/bin/
 #+end_src
 
 *** Mac install
@@ -956,16 +999,16 @@ This will cleanly grab your 32 binaries and ignore all the compiler junk.
 cd ~/Desktop
 #+end_src
 
-Note: replace v2 with the release number in the examples below.
+Note: replace v3 with the release number in the examples below.
 
 #+begin_src sh
-mv build rust-scripts-build-v2
+mv build rust-scripts-build-v3
 #+end_src
 
-Change into the rust-scripts-build-v2 directory
+Change into the rust-scripts-build-v3 directory
 
 #+begin_src sh
-cd rust-scripts-build-v2
+cd rust-scripts-build-v3
 #+end_src
 
 **** rename the build directories for nixos, linux and windows
@@ -973,13 +1016,13 @@ cd rust-scripts-build-v2
 linux
 
 #+begin_src sh
-mv linux linux-rust-scripts-v2
+mv linux linux-rust-scripts-v3
 #+end_src
 
 nixos
 
 #+begin_src sh
-mv nixos nixos-rust-scripts-v2
+mv nixos nixos-rust-scripts-v3
 #+end_src
 
 **** remove the rust_scripts file
@@ -992,46 +1035,46 @@ Remove the rust_scripts file from the Linux and NixOS
 Linux
 
 #+begin_src sh
-rm -i linux-rust-scripts-v2/rust_scripts
+rm -i linux-rust-scripts-v3/rust_scripts
 #+end_src
 
 NixOS
 
 #+begin_src sh
-rm -i nixos-rust-scripts-v2/rust_scripts
+rm -i nixos-rust-scripts-v3/rust_scripts
 #+end_src
 
 **** compress the releases
 ***** linux
 
 #+begin_src sh
-tar -czvf linux-rust-scripts-v2.tar.gz linux-rust-scripts-v2
+tar -czvf linux-rust-scripts-v3.tar.gz linux-rust-scripts-v3
 #+end_src
 
 ***** nixos
 
 #+begin_src sh
-tar -czvf nixos-rust-scripts-v2.tar.gz nixos-rust-scripts-v2
+tar -czvf nixos-rust-scripts-v3.tar.gz nixos-rust-scripts-v3
 #+end_src
 
 **** create release-files directory
 
 #+begin_src sh
-mkdir -p release-files-v2
+mkdir -p release-files-v3
 #+end_src
 
 move the tar files and zip into the release-files directory
 
 #+begin_src sh
-mv *-rust-scripts-v[0-9]*.tar.gz release-files-v2/
+mv *-rust-scripts-v[0-9]*.tar.gz release-files-v3/
 #+end_src
 
 **** create checksums for the archives
 
-change directory into the release-files-v2 directory
+change directory into the release-files-v3 directory
 
 #+begin_src sh
-cd release-files-v2
+cd release-files-v3
 #+end_src
 
 create the checksums
@@ -1039,13 +1082,13 @@ create the checksums
 ***** linux 
 
 #+begin_src sh
-sha256sum linux-rust-scripts-v2.tar.gz > linux-rust-scripts-v2.tar.gz.sha256
+sha256sum linux-rust-scripts-v3.tar.gz > linux-rust-scripts-v3.tar.gz.sha256
 #+end_src
 
 ***** nixos
 
 #+begin_src sh
-sha256sum nixos-rust-scripts-v2.tar.gz > nixos-rust-scripts-v2.tar.gz.sha256
+sha256sum nixos-rust-scripts-v3.tar.gz > nixos-rust-scripts-v3.tar.gz.sha256
 #+end_src
 
 *** Remove old scripts before rebuilding.
