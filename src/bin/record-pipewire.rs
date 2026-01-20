@@ -1,6 +1,6 @@
 //==============================================================================
 // record-pipewire
-// Description: record pipewire audio and rename file with duration on exit
+// Description: record pipewire audio
 //==============================================================================
 
 use clap::Parser;
@@ -50,7 +50,7 @@ fn main() -> io::Result<()> {
     enable_raw_mode()?;
 
     loop {
-        // Check for 'q' key every 100ms
+        // timer for terminal ouput, and check for q
         if event::poll(Duration::from_millis(100))? {
             if let Event::Key(key) = event::read()? {
                 if key.code == KeyCode::Char('q') {
