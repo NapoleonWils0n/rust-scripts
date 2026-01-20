@@ -951,7 +951,7 @@ One of the main reasons to use musl is to ensure the binary has no external depe
 You can verify this by running the ldd command on one of the new binaries:
 
 #+begin_src sh
-ldd target/x86_64-unknown-linux-musl/release/scene-detect-auto
+ldd target/x86_64-unknown-linux-musl/release/record-pipewire
 #+end_src
 
 Expected Output: It should say statically linked or not a dynamic executable.
