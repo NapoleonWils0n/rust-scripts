@@ -13,21 +13,30 @@ use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
 
 #[derive(Parser, Debug)]
 #[command(author, version, about = "Record PipeWire audio with duration in filename")]
+#[clap(disable_version_flag = true, disable_help_flag = true)]
 struct Args {
-    /// Optional prefix (defaults to 'pipewire')
-    #[arg(short = 'p', default_value = "pipewire")]
+    /// Optional prefix
+    #[arg(short = 'o', default_value = "pipewire")]
     prefix: String,
+
+    /// Print help
+    #[arg(short = 'h', long = "help", action = clap::ArgAction::Help)]
+    help: Option<bool>,
+
+    /// Print version
+    #[arg(short = 'v', long = "version", action = clap::ArgAction::Version)]
+    version: Option<bool>,
 }
 
 fn main() -> io::Result<()> {
     let args = Args::parse();
     
-    // 1. Temporary filename to use during recording
+    // 1. Temporary filename used during active recording
     let temp_filename = format!("{}-temp.wav", args.prefix);
 
     println!("Press 'q' to stop recording...");
 
-    // Start pw-record 
+    // Start pw-record child process
     let mut child = Command::new("pw-record")
         .arg("-P")
         .arg("{ stream.capture.sink=true }")
@@ -40,23 +49,21 @@ fn main() -> io::Result<()> {
     let start_time = Instant::now();
     enable_raw_mode()?;
 
-    let mut final_duration = Duration::new(0, 0);
-
     loop {
+        // Check for 'q' key every 100ms
         if event::poll(Duration::from_millis(100))? {
             if let Event::Key(key) = event::read()? {
                 if key.code == KeyCode::Char('q') {
-                    final_duration = start_time.elapsed();
                     println!("\r\nStopping recording...");
                     let _ = child.kill();
-                    let _ = child.wait(); // Ensure process is fully closed
+                    let _ = child.wait(); 
                     break;
                 }
             }
         }
 
+        // Safety: break if the recording process dies on its own
         if let Ok(Some(_)) = child.try_wait() {
-            final_duration = start_time.elapsed();
             println!("\r\npw-record exited unexpectedly.");
             break;
         }
@@ -73,7 +80,10 @@ fn main() -> io::Result<()> {
 
     disable_raw_mode()?;
 
-    // 2. Format the final filename with duration
+    // 2. Capture final duration now that the loop has finished
+    let final_duration = start_time.elapsed();
+
+    // 3. Format the final filename
     let duration_str = format!(
         "{:02}:{:02}:{:02}",
         final_duration.as_secs() / 3600,
@@ -83,12 +93,13 @@ fn main() -> io::Result<()> {
     
     let final_filename = format!("{}-[{}].wav", args.prefix, duration_str);
 
-    // 3. Rename the temporary file to the final duration-based name
+    // 4. Rename the temporary file to include the duration
     if fs::metadata(&temp_filename).is_ok() {
         fs::rename(&temp_filename, &final_filename)?;
-        println!("Recording saved to: {}", final_filename);
+        // Adding \r and extra spaces to wipe the previous timer line
+        println!("\r\x1B[2KRecording saved to: {}", final_filename);
     } else {
-        println!("Error: Recording file was not created.");
+        eprintln!("\rError: Temporary recording file was not found.");
     }
 
     Ok(())
