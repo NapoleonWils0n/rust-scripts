@@ -11,6 +11,12 @@ path = "src/bin/pinch.rs"
 name = "relay-mpv"
 path = "src/bin/relay-mpv.rs"
 
+[[bin]]
+name = "record-pipewire"
+path = "src/bin/record-pipewire.rs"
+
 [dependencies]
 clap = { version = "4.0", features = ["derive"] }
 libc = "0.2"
+chrono = "0.4"
+crossterm = "0.27"
