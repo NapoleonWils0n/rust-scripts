@@ -1,72 +1,95 @@
+//==============================================================================
+// record-pipewire
+// Description: record pipewire audio and rename file with duration on exit
+//==============================================================================
+
 use clap::Parser;
 use std::io::{self, Write};
 use std::process::{Command, Stdio};
 use std::time::{Duration, Instant};
-use std::sync::Arc;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::fs;
 use crossterm::event::{self, Event, KeyCode};
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
 
 #[derive(Parser, Debug)]
-#[command(author, version, about = "Record PipeWire audio in Rust")]
+#[command(author, version, about = "Record PipeWire audio with duration in filename")]
 struct Args {
-    /// Output file name
-    #[arg(short = 'o')]
-    output: Option<String>,
+    /// Optional prefix (defaults to 'pipewire')
+    #[arg(short = 'p', default_value = "pipewire")]
+    prefix: String,
 }
 
 fn main() -> io::Result<()> {
     let args = Args::parse();
     
-    // Default naming convention from your original script [cite: 21]
-    let timestamp = chrono::Local::now().format("%Y-%m-%d-%H-%M-%S").to_string();
-    let default_name = format!("pipewire-{}.wav", timestamp);
-    let filename = args.output.unwrap_or(default_name);
+    // 1. Temporary filename to use during recording
+    let temp_filename = format!("{}-temp.wav", args.prefix);
 
-    println!("Recording to: {}", filename);
     println!("Press 'q' to stop recording...");
 
-    // Start pw-record as a child process [cite: 24]
+    // Start pw-record 
     let mut child = Command::new("pw-record")
         .arg("-P")
         .arg("{ stream.capture.sink=true }")
-        .arg(&filename)
+        .arg(&temp_filename)
         .stdout(Stdio::null())
         .stderr(Stdio::null())
         .spawn()
         .expect("Failed to start pw-record");
 
     let start_time = Instant::now();
-    enable_raw_mode()?; // Enter raw mode to capture 'q' without Enter
+    enable_raw_mode()?;
+
+    let mut final_duration = Duration::new(0, 0);
 
     loop {
-        // 1. Check if 'q' was pressed
         if event::poll(Duration::from_millis(100))? {
             if let Event::Key(key) = event::read()? {
                 if key.code == KeyCode::Char('q') {
-                    println!("\nStopping recording...");
-                    let _ = child.kill(); // Gracefully kill pw-record
+                    final_duration = start_time.elapsed();
+                    println!("\r\nStopping recording...");
+                    let _ = child.kill();
+                    let _ = child.wait(); // Ensure process is fully closed
                     break;
                 }
             }
         }
 
-        // 2. Check if the process exited unexpectedly
         if let Ok(Some(_)) = child.try_wait() {
-            println!("\npw-record exited unexpectedly.");
+            final_duration = start_time.elapsed();
+            println!("\r\npw-record exited unexpectedly.");
             break;
         }
 
-        // 3. Show live output in the terminal
         let elapsed = start_time.elapsed();
-        print!("\rRecording: {:02}:{:02}:{:02} ", 
-               elapsed.as_secs() / 3600, 
-               (elapsed.as_secs() % 3600) / 60, 
-               elapsed.as_secs() % 60);
+        print!(
+            "\rRecording: {:02}:{:02}:{:02} ", 
+            elapsed.as_secs() / 3600, 
+            (elapsed.as_secs() % 3600) / 60, 
+            elapsed.as_secs() % 60
+        );
         io::stdout().flush()?;
     }
 
     disable_raw_mode()?;
-    println!("Recording saved to {}", filename);
+
+    // 2. Format the final filename with duration
+    let duration_str = format!(
+        "{:02}:{:02}:{:02}",
+        final_duration.as_secs() / 3600,
+        (final_duration.as_secs() % 3600) / 60,
+        final_duration.as_secs() % 60
+    );
+    
+    let final_filename = format!("{}-[{}].wav", args.prefix, duration_str);
+
+    // 3. Rename the temporary file to the final duration-based name
+    if fs::metadata(&temp_filename).is_ok() {
+        fs::rename(&temp_filename, &final_filename)?;
+        println!("Recording saved to: {}", final_filename);
+    } else {
+        println!("Error: Recording file was not created.");
+    }
+
     Ok(())
 }
