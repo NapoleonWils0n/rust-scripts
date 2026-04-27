@@ -78,7 +78,8 @@ fn main() {
         "--ovc=rawvideo",
         "--oac=pcm_s16le",
         "--msg-level=all=status,ffmpeg=fatal",
-        "--ytdl-raw-options=sleep-interval=0,max-sleep-interval=0,socket-timeout=5,no-playlist=",
+        "--config-dir=/dev/null",
+        "--ytdl-format=bestvideo[height<=?1080]+bestaudio/best",
     ];
 
     let start_arg;
