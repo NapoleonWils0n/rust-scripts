@@ -1,7 +1,10 @@
 [package]
 name = "rust_scripts"
-version = "0.3.0"
+version = "0.4.0"
 edition = "2024"
+
+[lib]
+path = "src/lib.rs"
 
 [[bin]]
 name = "pinch"
@@ -14,6 +17,10 @@ path = "src/bin/relay-mpv.rs"
 [[bin]]
 name = "record-pipewire"
 path = "src/bin/record-pipewire.rs"
+
+[[bin]]
+name = "loopback-oss"
+path = "src/bin/loopback-oss.rs"
 
 [dependencies]
 clap = { version = "4.0", features = ["derive"] }
