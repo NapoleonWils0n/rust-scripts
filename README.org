@@ -138,6 +138,10 @@ Dependencies:
  deno: https://deno.com/
 #+end_example
 
+*** loopback-oss
+
+loopback-oss Freebsd script to enable a audio loopback oss device to record system audio
+
 ** Scripts install
 *** NixOS install
 :PROPERTIES:
