@@ -4,7 +4,7 @@
 //==============================================================================
 
 // Import command-line argument parsing traits and macros from the clap crate
-use clap::{Parser, CommandFactory};
+use clap::Parser;
 // Import shared helper functions from library crate
 use rust_scripts::{run_command, run_and_capture};
 
