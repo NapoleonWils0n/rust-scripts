@@ -22,6 +22,10 @@ path = "src/bin/record-pipewire.rs"
 name = "loopback-oss"
 path = "src/bin/loopback-oss.rs"
 
+[[bin]]
+name = "record-desktop-audio"
+path = "src/bin/record-desktop-audio.rs"
+
 [dependencies]
 clap = { version = "4.0", features = ["derive"] }
 libc = "0.2"
