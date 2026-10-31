@@ -19,10 +19,6 @@ name = "record-pipewire"
 path = "src/bin/record-pipewire.rs"
 
 [[bin]]
-name = "loopback-oss"
-path = "src/bin/loopback-oss.rs"
-
-[[bin]]
 name = "record-desktop-audio"
 path = "src/bin/record-desktop-audio.rs"
 

@@ -138,41 +138,9 @@ Dependencies:
  deno: https://deno.com/
 #+end_example
 
-*** loopback-oss
-
-loopback-oss Freebsd script to enable a audio loopback oss device to record system audio
-
-run the script as root
-
-#+begin_src sh
-doas loopback-oss
-#+end_src
-
-control c to quit
-
-record desktop audio using sox
-
-#+begin_src sh
-sox -r 48k -b 16 -v 0.99 -t oss /dev/dsp -t wav out.wav
-#+end_src
-
-mpv capture audio
-
-edit your mpv.conf
-
-#+begin_src sh
-vi ~/.config/mpv/mpv.conf
-#+end_src
-
-add dsp as the audio device
-
-#+begin_src conf
-audio-device=/dev/dsp
-#+end_src
-
 *** record-desktop-audio
 
-record-desktop-audio freebsd script that works with loopback-oss to record system audio
+record-desktop-audio freebsd script that works with virtual_oss to record system audio
 
 ** Scripts install
 *** Linux install
