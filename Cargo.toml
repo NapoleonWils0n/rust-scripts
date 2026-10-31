@@ -18,10 +18,6 @@ path = "src/bin/relay-mpv.rs"
 name = "record-pipewire"
 path = "src/bin/record-pipewire.rs"
 
-[[bin]]
-name = "record-desktop-audio"
-path = "src/bin/record-desktop-audio.rs"
-
 [dependencies]
 clap = { version = "4.0", features = ["derive"] }
 libc = "0.2"
